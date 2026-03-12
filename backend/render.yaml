@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: habit-tracker-api
+    env: docker
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: DB_HOST
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
