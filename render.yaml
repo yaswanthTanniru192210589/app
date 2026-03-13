@@ -2,6 +2,7 @@ services:
   - type: web
     name: habit-tracker-api
     env: docker
+    rootDir: backend
     plan: free
     healthCheckPath: /
     envVars:
