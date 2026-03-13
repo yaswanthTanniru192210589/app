@@ -1,10 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
-  static const String baseUrl = 'https://habit-tracker-api-pn2i.onrender.com';
-  static const _storage = FlutterSecureStorage();
+  static const String baseUrl = 'https://habit-tracker-api-zavi.onrender.com';
 
   static Future<Map<String, dynamic>> login(String email, String password) async {
     final response = await http.post(
@@ -15,8 +14,9 @@ class AuthService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      await _storage.write(key: 'jwt_token', value: data['access_token']);
-      await _storage.write(key: 'user_id', value: data['user']['id'].toString());
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('jwt_token', data['access_token']);
+      await prefs.setString('user_id', data['user']['id'].toString());
       return data;
     } else {
       throw Exception(jsonDecode(response.body)['detail'] ?? 'Failed to login');
@@ -32,8 +32,9 @@ class AuthService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      await _storage.write(key: 'jwt_token', value: data['access_token']);
-      await _storage.write(key: 'user_id', value: data['user_id'].toString());
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('jwt_token', data['access_token']);
+      await prefs.setString('user_id', data['user_id'].toString());
       return data;
     } else {
       throw Exception(jsonDecode(response.body)['detail'] ?? 'Failed to register');
@@ -41,16 +42,19 @@ class AuthService {
   }
 
   static Future<void> logout() async {
-    await _storage.delete(key: 'jwt_token');
-    await _storage.delete(key: 'user_id');
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('jwt_token');
+    await prefs.remove('user_id');
   }
 
   static Future<String?> getToken() async {
-    return await _storage.read(key: 'jwt_token');
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('jwt_token');
   }
 
   static Future<int?> getUserId() async {
-    final idStr = await _storage.read(key: 'user_id');
+    final prefs = await SharedPreferences.getInstance();
+    final idStr = prefs.getString('user_id');
     return idStr != null ? int.tryParse(idStr) : null;
   }
 }
