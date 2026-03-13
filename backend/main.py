@@ -4,10 +4,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from schemas import RegisterRequest, LoginRequest, HabitCreate, HabitLogCreate
 import jwt
+import os
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
+from contextlib import asynccontextmanager
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    create_tables()
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 def create_tables():
     conn = get_db_connection()
@@ -56,9 +63,7 @@ def create_tables():
     cursor.close()
     conn.close()
 
-@app.on_event("startup")
-def startup_event():
-    create_tables()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -67,7 +72,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-SECRET_KEY = "your_super_secret_key"
+SECRET_KEY = os.environ.get("SECRET_KEY", "fallback_dev_key_change_in_production")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 7 days
 
