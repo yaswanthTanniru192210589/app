@@ -8,6 +8,57 @@ from passlib.context import CryptContext
 from datetime import datetime, timedelta
 
 app = FastAPI()
+
+def create_tables():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Create Users Table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+
+    # Create Habits Table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS habits (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        habit_name VARCHAR(255) NOT NULL,
+        description TEXT,
+        category VARCHAR(100) DEFAULT 'Uncategorized',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+    ''')
+
+    # Create Habit Logs Table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS habit_logs (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        habit_id INT NOT NULL,
+        date DATE NOT NULL,
+        status TINYINT(1) NOT NULL, /* e.g., 1 for complete, 0 for incomplete */
+        completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (habit_id) REFERENCES habits(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_user_habit_date (user_id, habit_id, date)
+    )
+    ''')
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+@app.on_event("startup")
+def startup_event():
+    create_tables()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
