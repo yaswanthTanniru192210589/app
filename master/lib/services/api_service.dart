@@ -4,7 +4,7 @@ import 'auth_service.dart';
 
 class ApiService {
 
-  static const String baseUrl = 'http://127.0.0.1:8001';
+  static const String baseUrl = 'https://habit-tracker-api-pn2i.onrender.com';
 
   static Future<Map<String, String>> _getHeaders() async {
     final token = await AuthService.getToken();

@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthService {
-  static const String baseUrl = 'http://127.0.0.1:8001';
+  static const String baseUrl = 'https://habit-tracker-api-pn2i.onrender.com';
   static const _storage = FlutterSecureStorage();
 
   static Future<Map<String, dynamic>> login(String email, String password) async {
